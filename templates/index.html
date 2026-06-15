@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FibroCheck — Fibroid Risk Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --rose:      #c2506f;
+    --rose-lt:   #f2d9e0;
+    --rose-dk:   #8c2d46;
+    --cream:     #fdf8f4;
+    --ink:       #1a1118;
+    --muted:     #6b5c64;
+    --card:      #ffffff;
+    --border:    #e8dde4;
+    --success:   #2d8c5e;
+    --warn:      #c27a2c;
+    --danger:    #c2506f;
+    --radius:    14px;
+    --shadow:    0 4px 28px rgba(194,80,111,.10);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ---- Header ---- */
+  header {
+    background: var(--rose-dk);
+    color: #fff;
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .logo-icon {
+    width: 48px; height: 48px;
+    background: rgba(255,255,255,.18);
+    border-radius: 12px;
+    display: grid; place-items: center;
+    font-size: 24px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    letter-spacing: -.3px;
+  }
+  header p { font-size: .85rem; opacity: .75; margin-top: 2px; }
+
+  /* ---- Main layout ---- */
+  main {
+    max-width: 860px;
+    margin: 40px auto;
+    padding: 0 20px 60px;
+  }
+
+  .intro-card {
+    background: var(--rose-lt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 28px;
+    margin-bottom: 32px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .intro-card .icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+  .intro-card p { font-size: .9rem; color: var(--muted); line-height: 1.6; }
+  .intro-card strong { color: var(--rose-dk); }
+
+  /* ---- Form card ---- */
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .section-header {
+    background: linear-gradient(135deg, var(--rose-dk), var(--rose));
+    color: #fff;
+    padding: 14px 28px;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-body { padding: 28px 28px 20px; }
+
+  /* ---- Grid inputs ---- */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    header { padding: 20px; }
+    .section-body { padding: 20px 18px; }
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: .3px;
+  }
+
+  input[type="number"], select {
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .95rem;
+    color: var(--ink);
+    background: #fff;
+    transition: border-color .2s, box-shadow .2s;
+    width: 100%;
+    appearance: none;
+  }
+  input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: var(--rose);
+    box-shadow: 0 0 0 3px rgba(194,80,111,.12);
+  }
+  .hint { font-size: .75rem; color: #a08899; }
+
+  /* ---- BP row ---- */
+  .bp-row { display: flex; align-items: center; gap: 10px; }
+  .bp-row input { flex: 1; }
+  .bp-sep { font-size: 1.2rem; color: var(--muted); font-weight: 700; }
+
+  /* ---- Symptoms ---- */
+  .symptoms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .symptom-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+    user-select: none;
+  }
+  .symptom-chip:hover { border-color: var(--rose); background: var(--rose-lt); }
+  .symptom-chip input[type="checkbox"] { display: none; }
+  .symptom-chip.checked {
+    border-color: var(--rose);
+    background: var(--rose-lt);
+    color: var(--rose-dk);
+    font-weight: 600;
+  }
+  .chip-dot {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+  .symptom-chip.checked .chip-dot {
+    background: var(--rose);
+    border-color: var(--rose);
+    color: #fff;
+  }
+  .chip-dot::after { content: ''; display: none; }
+  .symptom-chip.checked .chip-dot::after {
+    display: block;
+    content: '✓';
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .chip-label { font-size: .85rem; line-height: 1.3; }
+
+  /* ---- Divider between sections ---- */
+  .section-divider { border: none; border-top: 1px solid var(--border); }
+
+  /* ---- Submit button ---- */
+  .submit-area {
+    padding: 24px 28px;
+    display: flex;
+    justify-content: center;
+  }
+  button[type="submit"] {
+    background: linear-gradient(135deg, var(--rose-dk), var(--rose));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 52px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: .3px;
+    transition: opacity .2s, transform .1s, box-shadow .2s;
+    box-shadow: 0 4px 18px rgba(194,80,111,.35);
+  }
+  button[type="submit"]:hover { opacity: .92; transform: translateY(-1px); }
+  button[type="submit"]:active { transform: translateY(0); }
+  button[type="submit"]:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+  /* ---- Result card ---- */
+  #result-section { margin-top: 28px; }
+
+  .result-card {
+    border-radius: var(--radius);
+    border: 2px solid transparent;
+    padding: 32px 28px;
+    display: none;
+    animation: fadeUp .4s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-card.low    { background: #edf7f2; border-color: #2d8c5e; }
+  .result-card.moderate { background: #fef6ec; border-color: #c27a2c; }
+  .result-card.high   { background: #fdedf1; border-color: var(--rose); }
+
+  .result-top { display: flex; align-items: center; gap: 18px; margin-bottom: 20px; }
+  .result-badge {
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    display: grid; place-items: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .low    .result-badge { background: #c5eedd; }
+  .moderate .result-badge { background: #fde7c2; }
+  .high   .result-badge { background: var(--rose-lt); }
+
+  .result-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  .low    .result-title { color: var(--success); }
+  .moderate .result-title { color: var(--warn); }
+  .high   .result-title { color: var(--rose-dk); }
+
+  .result-subtitle { font-size: .88rem; color: var(--muted); margin-top: 4px; }
+
+  .stats-row {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .stat-box {
+    flex: 1; min-width: 110px;
+    background: rgba(255,255,255,.7);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+  .stat-label { font-size: .72rem; color: var(--muted); margin-top: 4px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; }
+
+  .advice-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .advice-list li {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: .88rem; color: var(--muted); line-height: 1.5;
+  }
+  .advice-list li span.bullet { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+
+  .disclaimer {
+    margin-top: 28px;
+    background: #fff7f9;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    font-size: .8rem;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: center;
+  }
+  .disclaimer strong { color: var(--rose-dk); }
+
+  /* ---- Loading spinner ---- */
+  .spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">🔬</div>
+  <div>
+    <h1>FibroCheck</h1>
+    <p>Fibroid Risk Assessment Tool &mdash; Final Year Research Project</p>
+  </div>
+</header>
+
+<main>
+
+  <div class="intro-card">
+    <div class="icon">ℹ️</div>
+    <p>
+      Enter your clinical and demographic information below. This tool uses a
+      <strong>Gradient Boosting (XGBoost) machine learning model</strong> trained on
+      patient data to estimate your risk of uterine fibroid development.
+      <strong>This is not a medical diagnosis</strong> — always consult a qualified healthcare provider.
+    </p>
+  </div>
+
+  <form id="fibroidForm">
+    <div class="form-card">
+
+      <!-- Section 1: Demographics -->
+      <div class="section-header">
+        👤 &nbsp; Personal Information
+      </div>
+      <div class="section-body">
+        <div class="grid-3">
+          <div class="field">
+            <label for="age">Age (years)</label>
+            <input type="number" id="age" name="age" min="10" max="80" placeholder="e.g. 32" required />
+          </div>
+          <div class="field">
+            <label for="height">Height (meters)</label>
+            <input type="number" id="height" name="height" step="0.01" min="1.0" max="2.5" placeholder="e.g. 1.65" required />
+            <span class="hint">Enter in metres, e.g. 1.65</span>
+          </div>
+          <div class="field">
+            <label for="weight">Weight (kg)</label>
+            <input type="number" id="weight" name="weight" step="0.1" min="20" max="250" placeholder="e.g. 68" required />
+          </div>
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- Section 2: Blood Pressure -->
+      <div class="section-header">
+        🩺 &nbsp; Blood Pressure
+      </div>
+      <div class="section-body">
+        <div class="grid-2">
+          <div class="field">
+            <label>Systolic / Diastolic (mmHg)</label>
+            <div class="bp-row">
+              <input type="number" id="systolic_bp" name="systolic_bp" min="40" max="250" placeholder="Systolic e.g. 120" required />
+              <span class="bp-sep">/</span>
+              <input type="number" id="diastolic_bp" name="diastolic_bp" min="20" max="150" placeholder="Diastolic e.g. 80" required />
+            </div>
+            <span class="hint">Systolic is the top/first number; Diastolic is the bottom/second number</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- Section 3: Symptoms -->
+      <div class="section-header">
+        🩹 &nbsp; Current Symptoms
+        <span style="font-weight:400; opacity:.7; margin-left:6px;">(tick all that apply)</span>
+      </div>
+      <div class="section-body">
+        <div class="symptoms-grid" id="symptomsGrid">
+          <!-- JS will render chips here -->
+        </div>
+        <p class="hint" style="margin-top:12px;">If you have no symptoms, leave all boxes unticked.</p>
+      </div>
+
+      <!-- Submit -->
+      <div class="submit-area">
+        <button type="submit" id="submitBtn">
+          Assess My Risk →
+        </button>
+      </div>
+
+    </div>
+  </form>
+
+  <!-- Result area -->
+  <div id="result-section">
+    <div class="result-card" id="resultCard">
+      <div class="result-top">
+        <div class="result-badge" id="resultEmoji">✅</div>
+        <div>
+          <div class="result-title" id="resultTitle">Low Fibroid Risk</div>
+          <div class="result-subtitle" id="resultSubtitle">Based on your inputs, the model predicts a low likelihood of fibroid occurrence.</div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-val" id="statConf">—</div>
+          <div class="stat-label">Confidence</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statBMI">—</div>
+          <div class="stat-label">Your BMI</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statRisk">—</div>
+          <div class="stat-label">Risk Level</div>
+        </div>
+      </div>
+
+      <ul class="advice-list" id="adviceList"></ul>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Medical Disclaimer:</strong> This tool is a research prototype built as part of a final-year academic project.
+    It is not a substitute for professional medical advice, diagnosis, or treatment.
+    If you experience symptoms, please consult a licensed gynaecologist or healthcare provider.
+  </div>
+
+</main>
+
+<script>
+  // ---- Symptom definitions ----
+  const SYMPTOMS = [
+    { key: "symptom_bleeding",             label: "Bleeding / Spotting" },
+    { key: "symptom_heavy_period",         label: "Heavy Period" },
+    { key: "symptom_lower_abdominal_pain", label: "Lower Abdominal Pain" },
+    { key: "symptom_abdominal_pain",       label: "General Abdominal Pain" },
+    { key: "symptom_painful_period",       label: "Painful Period" },
+    { key: "symptom_frequent_urination",   label: "Frequent Urination" },
+    { key: "symptom_constipation",         label: "Constipation" },
+    { key: "symptom_pain_during_sex",      label: "Pain During Sex" },
+    { key: "symptom_body_weakness",        label: "Body Weakness" },
+  ];
+
+  // Render symptom chips
+  const grid = document.getElementById("symptomsGrid");
+  SYMPTOMS.forEach(s => {
+    const chip = document.createElement("label");
+    chip.className = "symptom-chip";
+    chip.innerHTML = `
+      <input type="checkbox" name="symptoms" value="${s.key}" />
+      <span class="chip-dot"></span>
+      <span class="chip-label">${s.label}</span>
+    `;
+    chip.querySelector("input").addEventListener("change", e => {
+      chip.classList.toggle("checked", e.target.checked);
+    });
+    grid.appendChild(chip);
+  });
+
+  // ---- Form submission ----
+  document.getElementById("fibroidForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Analysing…';
+
+    const symptoms = [...document.querySelectorAll('input[name="symptoms"]:checked')]
+                       .map(cb => cb.value);
+
+    const payload = {
+      age:          parseFloat(document.getElementById("age").value),
+      height:       parseFloat(document.getElementById("height").value),
+      weight:       parseFloat(document.getElementById("weight").value),
+      systolic_bp:  parseFloat(document.getElementById("systolic_bp").value),
+      diastolic_bp: parseFloat(document.getElementById("diastolic_bp").value),
+      symptoms,
+    };
+
+    try {
+      const resp = await fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      if (data.error) { alert("Error: " + data.error); return; }
+      showResult(data);
+    } catch (err) {
+      alert("Network error. Is the Flask server running?\n\n" + err);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = "Assess My Risk →";
+    }
+  });
+
+  // ---- Render result ----
+  function showResult(data) {
+    const card     = document.getElementById("resultCard");
+    const levelKey = data.risk_level.toLowerCase(); // low | moderate | high
+
+    // Style the card
+    card.className = `result-card ${levelKey}`;
+    card.style.display = "block";
+
+    // Badge
+    const emojis = { low: "✅", moderate: "⚠️", high: "🔴" };
+    document.getElementById("resultEmoji").textContent = emojis[levelKey] || "❓";
+
+    // Title & subtitle
+    document.getElementById("resultTitle").textContent =
+      `${data.risk_level} Fibroid Risk`;
+
+    const subtitles = {
+      low:      "The model predicts a low likelihood of fibroid occurrence based on your inputs.",
+      moderate: "The model predicts a moderate likelihood of fibroid occurrence. Consider a medical consultation.",
+      high:     "The model predicts a higher likelihood of fibroid occurrence. We strongly recommend consulting a gynaecologist.",
+    };
+    document.getElementById("resultSubtitle").textContent = subtitles[levelKey];
+
+    // Stats
+    document.getElementById("statConf").textContent = data.probability + "%";
+    document.getElementById("statBMI").textContent  = data.bmi;
+    document.getElementById("statRisk").textContent = data.risk_level;
+
+    // Advice
+    const adviceMap = {
+      low: [
+        { icon: "💚", text: "Maintain a healthy diet rich in fruits, vegetables, and whole grains." },
+        { icon: "🏃‍♀️", text: "Keep up regular physical activity — at least 30 minutes most days." },
+        { icon: "📅", text: "Schedule routine gynaecological check-ups at least once a year." },
+      ],
+      moderate: [
+        { icon: "🏥", text: "Schedule a gynaecological appointment to discuss your symptoms in detail." },
+        { icon: "🥗", text: "Consider a diet lower in red meat and processed foods, which may reduce fibroid risk." },
+        { icon: "📋", text: "Keep a symptom diary to track changes over time." },
+        { icon: "💊", text: "Ask your doctor about hormonal factors and monitoring options." },
+      ],
+      high: [
+        { icon: "🚨", text: "Please consult a gynaecologist as soon as possible for a proper clinical evaluation." },
+        { icon: "🔬", text: "An ultrasound scan is the standard first step to confirm fibroid presence and size." },
+        { icon: "📝", text: "Bring a record of your symptoms, their frequency, and severity to your appointment." },
+        { icon: "👨‍👩‍👧", text: "Inform your doctor about any family history of fibroids, as genetics is a risk factor." },
+      ],
+    };
+
+    const list = document.getElementById("adviceList");
+    list.innerHTML = "";
+    (adviceMap[levelKey] || []).forEach(a => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="bullet">${a.icon}</span><span>${a.text}</span>`;
+      list.appendChild(li);
+    });
+
+    // Scroll to result
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+</script>
+</body>
+</html>
