@@ -66,7 +66,7 @@ To stop the server, go back to the terminal and press `CTRL + C`.
 
 ## ✅ PART B — Deploy it online for free (Render.com)
 
-This gives your friend a real shareable link, e.g.
+This gives you a real shareable link, e.g.
 `https://fibroid-risk-app.onrender.com`
 
 ### B1. Create a GitHub account (if you don't have one)
